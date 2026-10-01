@@ -2,7 +2,7 @@
 // Exposes window.VQFire and fires window events 'vqfire-ready' / 'vqfire-auth'.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, orderBy, onSnapshot, serverTimestamp, increment, writeBatch, addDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, orderBy, onSnapshot, serverTimestamp, increment, writeBatch, addDoc, deleteDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyA7nELkU_q9H2sK1XESQpt24UroPgiT4S0',
@@ -144,6 +144,35 @@ const VQFire = {
 
   subscribeProducts: (cb, onErr) => onSnapshot(collection(db, 'products'), s => cb(mapSnap(s)), e => onErr && onErr(e)),
   saveProduct: (id, data) => updateDoc(doc(db, 'products', id), Object.assign({}, data, { updatedAt: serverTimestamp() })),
+  createProduct: (id, data) => setDoc(doc(db, 'products', id), Object.assign({}, data, { updatedAt: serverTimestamp() })),
+  deleteProduct: id => deleteDoc(doc(db, 'products', id)),
+
+  // COA PDF — stored as base64 chunks in Firestore (works on the free Spark plan)
+  subscribeCoa: (cb, onErr) => onSnapshot(collection(db, 'coa'), s => cb(mapSnap(s)), e => onErr && onErr(e)),
+  async uploadCoa(meta, file) {
+    const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(file); });
+    const SIZE = 700000, n = Math.ceil(b64.length / SIZE);
+    const ref = doc(collection(db, 'coa'));
+    const b = writeBatch(db);
+    b.set(ref, Object.assign({}, meta, { fileName: file.name, fileSize: file.size, chunks: n, createdAt: serverTimestamp() }));
+    for (let i = 0; i < n; i++) b.set(doc(db, 'coa', ref.id, 'chunks', String(i).padStart(3, '0')), { i: i, d: b64.slice(i * SIZE, (i + 1) * SIZE) });
+    await b.commit();
+    return ref.id;
+  },
+  async getCoaBlob(id) {
+    const snap = await getDocs(collection(db, 'coa', id, 'chunks'));
+    const parts = snap.docs.map(d => d.data()).sort((a, b) => a.i - b.i).map(x => x.d).join('');
+    const bin = atob(parts), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return new Blob([u8], { type: 'application/pdf' });
+  },
+  async deleteCoa(id) {
+    const snap = await getDocs(collection(db, 'coa', id, 'chunks'));
+    const b = writeBatch(db);
+    snap.docs.forEach(d => b.delete(d.ref)); b.delete(doc(db, 'coa', id));
+    await b.commit();
+  },
+
   subscribeSettings: (cb, onErr) => onSnapshot(doc(db, 'settings', 'store'), d => cb(d.exists() ? d.data() : null), e => onErr && onErr(e)),
 
   subscribeCodes: (cb, onErr) => onSnapshot(collection(db, 'referralCodes'), s => cb(mapSnap(s)), e => onErr && onErr(e)),

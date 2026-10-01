@@ -15,7 +15,7 @@
     { no: 'VQ-260705-0098', date: '2026年7月5日', memberId: 'VQ-0001842', customer: '佐藤 慶', pay: 'bank', payStatus: 'paid', paidAt: '2026年7月5日', shipStatus: 'delivered', shippedAt: '2026年7月6日', deliveredAt: '2026年7月7日', carrier: 'ヤマト運輸', trackNo: '4821-7310-5540', total: 9960, lines: [{ id: 'vq-chill', qty: 2 }] }
   ];
   var PAY_NEXT = { unpaid: ['paid', 'expired', 'cancelled'], paid: ['refunded', 'cancelled'] };
-  var SHIP_NEXT = { pending: ['preparing'], preparing: ['shipped'], shipped: ['delivered', 'returned'] };
+  var SHIP_NEXT = { pending: ['preparing'], preparing: ['shipped', 'returned'], shipped: ['delivered', 'returned'], delivered: ['returned'] };
 
   var fsList = [], fsUnsub = null, subs = [], lastError = null;
   function F() { return window.VQFire; }

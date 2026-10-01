@@ -1087,7 +1087,24 @@ const DEMO_USER = {
   tel: '090-1234-5678', dob: '1994年7月3日', code: 'VQ-8F2K-QN41', invitedBy: 'VQ-1A9C-TT02', mail: true
 };
 
-const byId = id => PRODUCTS.find(p => p.id === id);
+const MASTER = PRODUCTS.slice();
+const byId = id => MASTER.find(p => p.id === id);
+const CAT_MAP = { cbg: { line: 'CBG', vibe: 'DAY', cat: 'DAY', spec: 'CBG' }, cbd: { line: 'CBD', vibe: 'CHILL', cat: 'CHILL', spec: 'CBD' },
+  cbx: { vibe: 'NIGHT', cat: 'NIGHT', spec: 'CBX' }, referral: { vibe: 'NIGHT', cat: 'NIGHT', spec: 'CBX', locked: true } };
+const makeProduct = d => { const base = byId(d.category === 'cbg' ? 'vq-day' : d.category === 'cbd' ? 'vq-chill' : 'vq-night'); const m = CAT_MAP[d.category] || CAT_MAP.cbd;
+  const img = d.img || base.img;
+  return Object.assign({}, base, { id: d.id, line: m.line, vibe: m.vibe, cat: m.cat, spec: m.spec, locked: !!(m.locked || d.requiresCode), flavor: '', img: img, main: img, thumbs: [img],
+    sku: d.sku || '', name: d.name || d.id, nameJa: '', price: d.price || 0, was: 0, stock: d.stock || 0, rank: 99, isNew: true, lot: '',
+    body: d.body || '', specs: [['内容量', '1.0 mL'], ['THC', '不検出（検出限界以下）']] }); };
+const syncProducts = list => {
+  if (!list.length) return;
+  const ids = {};
+  list.forEach(d => { ids[d.id] = 1; let p = byId(d.id); if (!p) { p = makeProduct(d); MASTER.push(p); }
+    if (typeof d.price === 'number') p.price = d.price; if (typeof d.stock === 'number') p.stock = d.stock;
+    if (d.name && p.isNew && p.rank === 99) p.name = d.name; p.hidden = d.published === false; });
+  MASTER.forEach(p => { if (!ids[p.id]) p.hidden = true; });
+  PRODUCTS.length = 0; MASTER.filter(p => !p.hidden).forEach(p => PRODUCTS.push(p));
+};
 
 const VALID_CODES = ['VQ-8F2K-QN41', 'VQ-1A9C-TT02', 'VQ-6D3M-LZ88'];
 
@@ -1191,8 +1208,7 @@ class Component extends DCLogic {
     this.onFire = e => this.fireAuth(e.detail);
     window.addEventListener('vqfire-auth', this.onFire);
     const fireStart = () => { const F = window.VQFire; if (!F) return;
-      this.unP = F.subscribeProducts(list => { list.forEach(d => { const p = byId(d.id); if (!p) return;
-        if (typeof d.price === 'number') p.price = d.price; if (typeof d.stock === 'number') p.stock = d.stock; }); this.forceUpdate(); }, e => console.warn('[VQFire products]', e.code || e.message || e));
+      this.unP = F.subscribeProducts(list => { syncProducts(list); this.forceUpdate(); }, e => console.warn('[VQFire products]', e.code || e.message || e));
       this.unS = F.subscribeSettings(st => this.setState({ settings: st }), e => console.warn('[VQFire settings]', e.code || e));
       if (F.user) this.fireAuth(F.user); };
     if (window.VQFire) fireStart(); else window.addEventListener('vqfire-ready', fireStart, { once: true });
@@ -1326,7 +1342,7 @@ class Component extends DCLogic {
   }
   placeOrder() {
     const s = this.state;
-    const sub = s.cart.reduce((a, l) => a + PRODUCTS.find(x => x.id === l.id).price * l.qty, 0);
+    const sub = s.cart.reduce((a, l) => a + MASTER.find(x => x.id === l.id).price * l.qty, 0);
     const total = sub + (sub >= this.shipRule().th ? 0 : this.shipRule().fee);
     const d0 = new Date(); const no = 'VQ-' + String(d0.getFullYear()).slice(2) + String(d0.getMonth() + 1).padStart(2, '0') + String(d0.getDate()).padStart(2, '0') + '-' + String(Date.now()).slice(-4);
     // PayPay: replace with the payment URL returned by the PayPay API (Create a QR Code / Web Payment)
@@ -1366,7 +1382,7 @@ class Component extends DCLogic {
       pwMsg: 'パスワードを変更しました。次回のログインから新しいパスワードをご利用ください。', pwOk: true }));
   }
   openProduct(id) {
-    const p = PRODUCTS.find(x => x.id === id);
+    const p = MASTER.find(x => x.id === id);
     if (p && p.locked && !this.state.unlocked) return this.setState({ lockPid: id, lockCode: '', lockErr: '' });
     this.setState({ screen: 'detail', pid: id, qty: 1, lockPid: null }); window.scrollTo(0, 0);
   }
@@ -1415,21 +1431,21 @@ class Component extends DCLogic {
     const threshold = this.shipRule().th;
     const authed = !!(s.user || s.admin);
     const gate = (this.props.ageGate ?? true) && !s.verified && !s.declined && !authed;
-    const p = PRODUCTS.find(x => x.id === s.pid) || null;
+    const p = MASTER.find(x => x.id === s.pid) || null;
     const hk = GROUPS.some(g => g.key === s.homeTab) ? s.homeTab : 'ALL';
     const fk = GROUPS.some(g => g.key === s.filter) ? s.filter : 'ALL';
     const listed = fk === 'ALL' ? PRODUCTS : PRODUCTS.filter(x => inGroup(x, fk));
     const lines = s.cart.map(l => {
-      const it = PRODUCTS.find(x => x.id === l.id);
+      const it = MASTER.find(x => x.id === l.id);
       return { id: l.id, name: it.name, img: it.img, cat: it.cat, spec: it.spec, qty: l.qty, total: YEN(it.price * l.qty),
         inc: () => this.bump(l.id, 1), dec: () => this.bump(l.id, -1), remove: () => this.drop(l.id) };
     });
-    const subtotal = s.cart.reduce((a, l) => a + PRODUCTS.find(x => x.id === l.id).price * l.qty, 0);
+    const subtotal = s.cart.reduce((a, l) => a + MASTER.find(x => x.id === l.id).price * l.qty, 0);
     const ship = subtotal >= threshold || subtotal === 0 ? 0 : this.shipRule().fee;
     const bank = (s.settings && s.settings.bankAccount) || {};
     const ppOff = !!(s.settings && s.settings.paypayEnabled === false);
 
-    const lp = s.lockPid ? PRODUCTS.find(x => x.id === s.lockPid) : null;
+    const lp = s.lockPid ? MASTER.find(x => x.id === s.lockPid) : null;
     const v = {
       lockOpen: !!lp, lockName: lp ? lp.name : '', lockImg: lp ? lp.img : '', lockCode: s.lockCode, lockErr: s.lockErr, hasLockErr: !!s.lockErr,
       setLockCode: e => this.setState({ lockCode: e.target.value, lockErr: '' }),
@@ -1505,9 +1521,9 @@ class Component extends DCLogic {
         const no = o.no;
         return { no: no, date: o.date, total: YEN(o.total),
         payLabel: o.pay === 'paypay' ? 'PayPay' : '銀行振込',
-        payStatus: cancelled ? (o.payStatus === 'expired' ? '期限切れ' : 'キャンセル') : paid ? '入金確認済み' : '入金待ち', payFg: cancelled ? '#77736b' : paid ? '#1c1b19' : '#b0452e',
+        payStatus: cancelled ? (o.payStatus === 'expired' ? '期限切れ' : 'キャンセル') : o.payStatus === 'refunded' ? '返金済み' : paid ? '入金確認済み' : '入金待ち', payFg: cancelled ? '#77736b' : paid ? '#1c1b19' : '#b0452e',
         payNote: paid ? (o.paidAt ? o.paidAt + ' 確認' : '') : (o.pay === 'paypay' ? '決済リンクからお支払いください' : 'ご注文から7日以内にお振込みください'),
-        shipStatus: cancelled ? '—' : paid && ship === 'pending' ? '発送準備中' : shipMap[ship], shipFg: lvl >= 4 ? '#1c1b19' : '#77736b',
+        shipStatus: cancelled ? '—' : ship === 'returned' ? '返品' : paid && ship === 'pending' ? '発送準備中' : shipMap[ship], shipFg: lvl >= 4 ? '#1c1b19' : '#77736b',
         shipNote: ship === 'delivered' ? (o.deliveredAt || '') + ' 受領' : ship === 'shipped' ? (o.carrier || '') + ' / 追跡番号 ' + (o.trackNo || '') : paid ? '発送手続き後に追跡番号をお知らせします' : 'ご入金確認後に発送します',
         track: '',
         steps: ['ご注文受付', '入金確認', '発送準備中', '発送済み', '配達完了'].map((label, i) => ({ label: label, bar: i < lvl ? '#1c1b19' : '#e2ddd4', fg: i < lvl ? '#1c1b19' : '#a9a49a' })),
@@ -1571,8 +1587,8 @@ class Component extends DCLogic {
       legalRevised: LEGAL_REVISED,
       freeShipLabel: YEN(threshold),
       cartCount: s.cart.reduce((a, l) => a + l.qty, 0),
-      quick: ['vq-day', 'vq-night', 'vq-chill', 'vq-focus'].map(id => { const q = PRODUCTS.find(x => x.id === id); return { vibe: q.vibe, flavor: q.flavor + ' / 1.0 mL', img: q.img, open: () => this.openProduct(id) }; }),
-      vibes: ['vq-day', 'vq-night', 'vq-chill', 'vq-focus'].map(id => { const q = PRODUCTS.find(x => x.id === id); return { en: q.vibe, flavor: q.flavor, img: q.img, bg: VIBE[q.vibe].bg, fg: VIBE[q.vibe].fg, open: () => this.openProduct(id) }; }),
+      quick: ['vq-day', 'vq-night', 'vq-chill', 'vq-focus'].map(id => { const q = MASTER.find(x => x.id === id); return { vibe: q.vibe, flavor: q.flavor + ' / 1.0 mL', img: q.img, open: () => this.openProduct(id) }; }),
+      vibes: ['vq-day', 'vq-night', 'vq-chill', 'vq-focus'].map(id => { const q = MASTER.find(x => x.id === id); return { en: q.vibe, flavor: q.flavor, img: q.img, bg: VIBE[q.vibe].bg, fg: VIBE[q.vibe].fg, open: () => this.openProduct(id) }; }),
       goDay: e => { if (e) e.preventDefault(); this.openProduct('vq-day'); },
       goNight: e => { if (e) e.preventDefault(); this.openProduct('vq-night'); },
       slides: SLIDES.map((sl, i) => ({ badge: sl.badge, name: sl.name, h1: sl.h1, h2: sl.h2, jp: sl.jp, bg: sl.bg, base: sl.base, pos: sl.pos, justify: sl.justify, fg: sl.fg, btnBg: sl.btnBg, btnFg: sl.btnFg, open: () => this.openProduct(sl.pid),

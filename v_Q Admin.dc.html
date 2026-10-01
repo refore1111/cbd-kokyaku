@@ -160,8 +160,24 @@
                   <span style="font-family: 'Roboto Mono', monospace; text-align: right">{{ o.qty }}</span>
                   <span style="font-family: 'Roboto Mono', monospace; text-align: right">¥{{ o.total }}</span>
                   <span style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start"><span style="background: {{ o.stBg }}; color: {{ o.stFg }}; padding: 4px 9px; font-size: 10.5px; border-radius: 2px; white-space: nowrap">{{ o.status }}</span><span style="font-family: 'Roboto Mono', monospace; font-size: 10px; color: #9ca3af">{{ o.sub }}</span></span>
-                  <span style="display: flex; gap: 6px"><sc-if value="{{ o.canAct }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.advance }}" style="border: 1px solid #d3d6db; background: #ffffff; color: #16181c; padding: 6px 10px; font-size: 11px; border-radius: 3px; cursor: pointer; white-space: nowrap" style-hover="border-color:#1a6b3c;color:#1a6b3c">{{ o.action }}</button></sc-if><sc-if value="{{ o.canCancel }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.cancel }}" style="border: none; background: transparent; color: #9ca3af; padding: 6px 4px; font-size: 11px; cursor: pointer; text-decoration: underline" style-hover="color:#a32222">取消</button></sc-if></span>
+                  <span style="display: flex; gap: 6px"><sc-if value="{{ o.canAct }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.advance }}" style="border: 1px solid #d3d6db; background: #ffffff; color: #16181c; padding: 6px 10px; font-size: 11px; border-radius: 3px; cursor: pointer; white-space: nowrap" style-hover="border-color:#1a6b3c;color:#1a6b3c">{{ o.action }}</button></sc-if><sc-if value="{{ o.canCancel }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.cancel }}" style="border: none; background: transparent; color: #9ca3af; padding: 6px 4px; font-size: 11px; cursor: pointer; text-decoration: underline" style-hover="color:#a32222">取消</button></sc-if><sc-if value="{{ o.canRefund }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.openRefund }}" style="border: none; background: transparent; color: #9ca3af; padding: 6px 4px; font-size: 11px; cursor: pointer; text-decoration: underline; white-space: nowrap" style-hover="color:#a32222">返品・返金</button></sc-if></span>
                 </div>
+                <sc-if value="{{ o.refundOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; padding: 12px 16px 16px; background: #fdf6f6; border-top: 1px dashed #f0c2c2">
+                    <label style="display: block">
+                      <span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">返金額（円）</span>
+                      <input type="text" value="{{ rfAmount }}" onChange="{{ setRfAmount }}" style="width: 130px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-family: 'Roboto Mono', monospace; font-size: 12px; text-align: right" />
+                    </label>
+                    <label style="display: block">
+                      <span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">理由</span>
+                      <input type="text" value="{{ rfReason }}" onChange="{{ setRfReason }}" placeholder="破損・誤配送など" style="width: 220px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px" />
+                    </label>
+                    <label style="display: flex; gap: 6px; align-items: center; font-size: 12px; color: #4b5563; padding-bottom: 8px"><input type="checkbox" checked="{{ rfRestock }}" onChange="{{ setRfRestock }}" />在庫に戻す</label>
+                    <button type="button" onClick="{{ confirmRefund }}" style="border: none; background: #a32222; color: #ffffff; padding: 9px 16px; font-size: 12px; font-weight: 700; border-radius: 3px; cursor: pointer">返品・返金を確定</button>
+                    <button type="button" onClick="{{ closeRefund }}" style="border: none; background: transparent; color: #6b7280; padding: 9px 6px; font-size: 12px; cursor: pointer; text-decoration: underline">閉じる</button>
+                    <span style="font-size: 11px; color: #6b7280">確定すると支払い状況が「返金済み」になり、売上から返金額が差し引かれます。</span>
+                  </div>
+                </sc-if>
                 <sc-if value="{{ o.shipOpen }}" hint-placeholder-val="{{ false }}">
                   <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 12px 16px 16px; background: #f7f8f9; border-top: 1px dashed #e0e2e6">
                     <label style="display: block">
@@ -188,23 +204,43 @@
         <div>
           <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; overflow-x: auto; margin-bottom: 14px">
             <div style="min-width: 940px">
-              <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 128px 118px 106px 96px 108px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e0e2e6; background: #f7f8f9; font-size: 11px; font-weight: 700; color: #4b5563">
+              <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 140px 108px 88px 84px 168px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e0e2e6; background: #f7f8f9; font-size: 11px; font-weight: 700; color: #4b5563">
                 <span></span><span>商品名</span><span>SKU</span><span>価格（税込）</span><span>在庫</span><span>公開</span><span>操作</span>
               </div>
               <sc-for list="{{ productRows }}" as="p" hint-placeholder-count="5">
-                <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 128px 118px 106px 96px 108px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #eceef1; font-size: 12px; align-items: center">
+                <div style="display: grid; grid-template-columns: 52px minmax(0, 1fr) 140px 108px 88px 84px 168px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #eceef1; font-size: 12px; align-items: center">
                   <span style="width: 40px; height: 40px; background: #eceef1 url({{ p.imgUrl }}) center/cover no-repeat; border-radius: 2px; display: block"></span>
-                  <span style="line-height: 1.5">{{ p.name }}</span>
-                  <span style="font-family: 'Roboto Mono', monospace; font-size: 11px; color: #6b7280">{{ p.sku }}</span>
+                  <input type="text" value="{{ p.name }}" onChange="{{ p.setName }}" style="width: 100%; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 7px 9px; font-size: 12px" />
+                  <input type="text" value="{{ p.sku }}" onChange="{{ p.setSku }}" style="width: 100%; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 7px 9px; font-family: 'Roboto Mono', monospace; font-size: 11px; color: #4b5563" />
                   <input type="text" value="{{ p.price }}" onChange="{{ p.setPrice }}" style="width: 100%; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 7px 9px; font-family: 'Roboto Mono', monospace; font-size: 12px; text-align: right" />
                   <input type="text" value="{{ p.stock }}" onChange="{{ p.setStock }}" style="width: 100%; box-sizing: border-box; border: 1px solid {{ p.stockBd }}; border-radius: 3px; padding: 7px 9px; font-family: 'Roboto Mono', monospace; font-size: 12px; text-align: right; color: {{ p.stockFg }}" />
                   <button type="button" onClick="{{ p.toggle }}" style="border: 1px solid {{ p.pubBd }}; background: {{ p.pubBg }}; color: {{ p.pubFg }}; padding: 6px 9px; font-size: 11px; border-radius: 3px; cursor: pointer">{{ p.pubLabel }}</button>
-                  <button type="button" onClick="{{ p.save }}" style="border: none; background: #16181c; color: #ffffff; padding: 7px 10px; font-size: 11px; border-radius: 3px; cursor: pointer" style-hover="background:#1a6b3c">{{ p.saveLabel }}</button>
+                  <span style="display: flex; gap: 6px">
+                    <button type="button" onClick="{{ p.save }}" style="border: none; background: #16181c; color: #ffffff; padding: 7px 10px; font-size: 11px; border-radius: 3px; cursor: pointer; white-space: nowrap" style-hover="background:#1a6b3c">{{ p.saveLabel }}</button>
+                    <button type="button" onClick="{{ p.remove }}" style="border: 1px solid #f0c2c2; background: #ffffff; color: #a32222; padding: 6px 10px; font-size: 11px; border-radius: 3px; cursor: pointer; white-space: nowrap">{{ p.removeLabel }}</button>
+                  </span>
                 </div>
               </sc-for>
             </div>
           </div>
-          <div style="background: #fff9e8; border: 1px solid #ecd9a0; border-radius: 4px; padding: 14px 16px; font-size: 12px; line-height: 1.85; color: #6b5a25">在庫が10個を下回った商品は在庫アラートに表示されます。価格・在庫の変更は「保存」で即時反映されます。</div>
+          <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; padding: 18px; margin-bottom: 14px">
+            <div style="font-size: 13px; font-weight: 700; margin-bottom: 14px">商品を追加</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end">
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">商品名</span><input type="text" value="{{ npName }}" onChange="{{ setNpName }}" placeholder="v_Q ○○ 1.0 mL" style="width: 240px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px" /></label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">SKU</span><input type="text" value="{{ npSku }}" onChange="{{ setNpSku }}" placeholder="VQ-XXX-01" style="width: 140px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-family: 'Roboto Mono', monospace; font-size: 12px" /></label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">価格（税込）</span><input type="text" value="{{ npPrice }}" onChange="{{ setNpPrice }}" style="width: 100px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-family: 'Roboto Mono', monospace; font-size: 12px; text-align: right" /></label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">在庫</span><input type="text" value="{{ npStock }}" onChange="{{ setNpStock }}" style="width: 80px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-family: 'Roboto Mono', monospace; font-size: 12px; text-align: right" /></label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">カテゴリ</span>
+                <select value="{{ npCat }}" onChange="{{ setNpCat }}" style="width: 150px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px; background: #ffffff">
+                  <option value="cbg">CBG</option><option value="cbd">CBD</option><option value="cbx">CBX</option><option value="referral">紹介コード限定</option>
+                </select>
+              </label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">画像URL（任意）</span><input type="text" value="{{ npImg }}" onChange="{{ setNpImg }}" placeholder="https://…" style="width: 220px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px" /></label>
+              <button type="button" onClick="{{ addProduct }}" style="border: none; background: #16181c; color: #ffffff; padding: 10px 18px; font-size: 12px; font-weight: 700; border-radius: 3px; cursor: pointer" style-hover="background:#1a6b3c">追加</button>
+            </div>
+            <sc-if value="{{ npHasMsg }}" hint-placeholder-val="{{ false }}"><div style="margin-top: 12px; font-size: 12px; color: {{ npMsgFg }}">{{ npMsg }}</div></sc-if>
+          </div>
+          <div style="background: #fff9e8; border: 1px solid #ecd9a0; border-radius: 4px; padding: 14px 16px; font-size: 12px; line-height: 1.85; color: #6b5a25">商品名・SKU・価格・在庫・公開状態の変更は「保存」でストアに反映されます。在庫が10個を下回った商品は在庫アラートに表示されます。削除はボタンを2回押すと確定します。</div>
         </div>
       </sc-if>
 
@@ -262,24 +298,46 @@
 
       <sc-if value="{{ isCoa }}" hint-placeholder-val="{{ false }}">
         <div>
+          <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; padding: 18px; margin-bottom: 16px">
+            <div style="font-size: 13px; font-weight: 700; margin-bottom: 14px">分析書（PDF）を登録</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end">
+              <label style="display: block">
+                <span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">商品</span>
+                <select value="{{ cfProduct }}" onChange="{{ setCfProduct }}" style="width: 240px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px; background: #ffffff">
+                  <sc-for list="{{ coaProductOpts }}" as="op" hint-placeholder-count="3"><option value="{{ op.id }}">{{ op.name }}</option></sc-for>
+                </select>
+              </label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">ロット番号</span><input type="text" value="{{ cfLot }}" onChange="{{ setCfLot }}" placeholder="LOT-26J-0001" style="width: 140px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-family: 'Roboto Mono', monospace; font-size: 12px" /></label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">検査機関</span><input type="text" value="{{ cfLab }}" onChange="{{ setCfLab }}" style="width: 160px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px" /></label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">THC</span><input type="text" value="{{ cfThc }}" onChange="{{ setCfThc }}" style="width: 130px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px" /></label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">分析日</span><input type="date" value="{{ cfDate }}" onChange="{{ setCfDate }}" style="width: 150px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 7px 10px; font-size: 12px" /></label>
+              <label style="display: block"><span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">PDF（5MBまで）</span><input type="file" accept="application/pdf" onChange="{{ setCfFile }}" style="font-size: 12px; width: 230px" /></label>
+              <button type="button" onClick="{{ addCoa }}" style="border: none; background: #16181c; color: #ffffff; padding: 10px 18px; font-size: 12px; font-weight: 700; border-radius: 3px; cursor: pointer" style-hover="background:#1a6b3c">{{ cfBtn }}</button>
+            </div>
+            <sc-if value="{{ cfHasMsg }}" hint-placeholder-val="{{ false }}"><div style="margin-top: 12px; font-size: 12px; color: {{ cfMsgFg }}">{{ cfMsg }}</div></sc-if>
+          </div>
           <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; overflow-x: auto">
-            <div style="min-width: 900px">
-              <div style="display: grid; grid-template-columns: minmax(0, 1fr) 138px 126px 104px 112px 118px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e0e2e6; background: #f7f8f9; font-size: 11px; font-weight: 700; color: #4b5563">
-                <span>商品</span><span>ロット番号</span><span>検査機関</span><span>THC</span><span>分析日</span><span>PDF</span>
+            <div style="min-width: 960px">
+              <div style="display: grid; grid-template-columns: minmax(0, 1fr) 132px 130px 110px 100px minmax(0, 180px) 132px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e0e2e6; background: #f7f8f9; font-size: 11px; font-weight: 700; color: #4b5563">
+                <span>商品</span><span>ロット番号</span><span>検査機関</span><span>THC</span><span>分析日</span><span>ファイル</span><span>操作</span>
               </div>
-              <sc-for list="{{ coaRows }}" as="c" hint-placeholder-count="5">
-                <div style="display: grid; grid-template-columns: minmax(0, 1fr) 138px 126px 104px 112px 118px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eceef1; font-size: 12px; align-items: center">
+              <sc-for list="{{ coaRows }}" as="c" hint-placeholder-count="3">
+                <div style="display: grid; grid-template-columns: minmax(0, 1fr) 132px 130px 110px 100px minmax(0, 180px) 132px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eceef1; font-size: 12px; align-items: center">
                   <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ c.name }}</span>
                   <span style="font-family: 'Roboto Mono', monospace; font-size: 11.5px">{{ c.lot }}</span>
                   <span style="font-size: 11.5px; color: #6b7280">{{ c.lab }}</span>
-                  <span style="font-family: 'Roboto Mono', monospace; font-size: 11.5px; color: #1a6b3c">{{ c.thc }}</span>
+                  <span style="font-size: 11.5px; color: #1a6b3c">{{ c.thc }}</span>
                   <span style="font-family: 'Roboto Mono', monospace; font-size: 11px; color: #6b7280">{{ c.date }}</span>
-                  <span><span style="background: {{ c.fBg }}; color: {{ c.fFg }}; padding: 4px 9px; font-size: 10.5px; border-radius: 2px">{{ c.file }}</span></span>
+                  <span style="font-size: 11px; color: {{ c.fFg }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ c.file }}</span>
+                  <span style="display: flex; gap: 6px">
+                    <sc-if value="{{ c.hasFile }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ c.view }}" style="border: 1px solid #d3d6db; background: #ffffff; color: #16181c; padding: 6px 10px; font-size: 11px; border-radius: 3px; cursor: pointer" style-hover="border-color:#1a6b3c;color:#1a6b3c">表示</button></sc-if>
+                    <button type="button" onClick="{{ c.remove }}" style="border: 1px solid #f0c2c2; background: #ffffff; color: #a32222; padding: 6px 10px; font-size: 11px; border-radius: 3px; cursor: pointer">{{ c.removeLabel }}</button>
+                  </span>
                 </div>
               </sc-for>
             </div>
           </div>
-          <div style="background: #fff9e8; border: 1px solid #ecd9a0; border-radius: 4px; padding: 14px 16px; font-size: 12px; line-height: 1.85; color: #6b5a25; margin-top: 14px">COA未添付のロットは商品ページに公開できません。分析書は入荷ロットごとに差し替えてください。</div>
+          <div style="background: #fff9e8; border: 1px solid #ecd9a0; border-radius: 4px; padding: 14px 16px; font-size: 12px; line-height: 1.85; color: #6b5a25; margin-top: 14px">分析書は入荷ロットごとに登録してください。COAが登録されていない商品はダッシュボードの対応待ちに表示されます。</div>
         </div>
       </sc-if>
 
@@ -418,41 +476,6 @@
         </div>
       </sc-if>
 
-      <sc-if value="{{ isStaff }}" hint-placeholder-val="{{ false }}">
-        <div>
-          <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; overflow-x: auto">
-            <div style="min-width: 860px">
-              <div style="display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 220px) repeat(4, 96px) 92px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e0e2e6; background: #f7f8f9; font-size: 11px; font-weight: 700; color: #4b5563">
-                <span>スタッフ</span><span>メール</span><span>注文</span><span>商品</span><span>顧客</span><span>売上</span><span>権限</span>
-              </div>
-              <sc-for list="{{ staffRows }}" as="st" hint-placeholder-count="4">
-                <div style="display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 220px) repeat(4, 96px) 92px; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #eceef1; font-size: 12px; align-items: center">
-                  <span>{{ st.name }}</span>
-                  <span style="font-size: 11.5px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ st.email }}</span>
-                  <sc-for list="{{ st.perms }}" as="p" hint-placeholder-count="4">
-                    <span><button type="button" onClick="{{ p.toggle }}" style="border: 1px solid {{ p.bd }}; background: {{ p.bg }}; color: {{ p.fg }}; padding: 5px 10px; font-size: 11px; border-radius: 3px; cursor: pointer; width: 100%">{{ p.label }}</button></span>
-                  </sc-for>
-                  <span style="font-size: 11.5px; color: #6b7280">{{ st.role }}</span>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-          <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; padding: 18px; margin-top: 16px">
-            <div style="font-size: 13px; font-weight: 700; margin-bottom: 14px">スタッフを追加</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end">
-              <label style="display: block">
-                <span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">氏名</span>
-                <input type="text" value="{{ stName }}" onChange="{{ setStName }}" style="width: 180px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 9px 11px; font-size: 12.5px" />
-              </label>
-              <label style="display: block">
-                <span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">メールアドレス</span>
-                <input type="email" value="{{ stEmail }}" onChange="{{ setStEmail }}" style="width: 240px; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 9px 11px; font-size: 12.5px" />
-              </label>
-              <button type="button" onClick="{{ addStaff }}" style="border: none; background: #16181c; color: #ffffff; padding: 10px 18px; font-size: 12px; font-weight: 700; border-radius: 3px; cursor: pointer" style-hover="background:#1a6b3c">招待を送る</button>
-            </div>
-          </div>
-        </div>
-      </sc-if>
 
     </div>
   </div>
@@ -472,8 +495,7 @@ const NAV = [
   { key: 'coa', label: 'COA／分析書管理', title: 'COA／分析書管理', sub: 'ロットごとの成分分析書' },
   { key: 'coupon', label: 'クーポン発行', title: 'クーポン発行', sub: '割引コードの作成と停止' },
   { key: 'mail', label: 'メルマガ配信', title: 'メルマガ配信', sub: '受信同意済み会員への配信' },
-  { key: 'report', label: '売上レポート', title: '売上レポート', sub: '月次推移と紹介経由の内訳' },
-  { key: 'staff', label: 'スタッフ権限管理', title: 'スタッフ権限管理', sub: '管理画面へのアクセス権' }
+  { key: 'report', label: '売上レポート', title: '売上レポート', sub: '月次推移と紹介経由の内訳' }
 ];
 
 const ADMIN = { email: 'admin@v-q.jp', pw: 'vqadmin', name: '管理者', role: 'オーナー' };
@@ -566,7 +588,11 @@ const PERM_LABELS = [['orders', '注文'], ['products', '商品'], ['customers',
 
 class Component extends DCLogic {
   state = { auth: false, email: '', pw: '', err: '', page: 'dash', orderFilter: 'ALL',
-    orders: [], shipFor: null, shipCarrier: 'ヤマト運輸', shipTrack: '', products: PRODUCTS, customers: CUSTOMERS, codes: CODES, coupons: COUPONS, staff: STAFF,
+    orders: [], shipFor: null, shipCarrier: 'ヤマト運輸', shipTrack: '',
+    refundFor: null, rf: { amount: '', reason: '', restock: true },
+    np: { name: '', sku: '', price: '', stock: '', cat: 'cbd', img: '', msg: '', ok: false }, delFor: null,
+    coaList: COA.map((c, i) => ({ id: 'demo-' + i, productId: c.id, lot: c.lot, lab: c.lab, thc: c.thc, date: c.date, fileName: c.file === '未添付' ? '' : 'sample.pdf', url: null })),
+    cf: { productId: '', lot: '', lab: '', thc: '0.00%（不検出）', date: '', fileName: '', msg: '', ok: false, busy: false }, coaDelFor: null, products: PRODUCTS, customers: CUSTOMERS, codes: CODES, coupons: COUPONS, staff: STAFF,
     savedId: null, issueTo: '', segment: 'all',
     cp: { code: '', value: '', until: '' },
     ml: { subject: '', body: '' }, sent: false,
@@ -587,7 +613,7 @@ class Component extends DCLogic {
     window.addEventListener('vqfire-auth', this.onFire);
     if (window.VQFire) this.fireAttach(); else window.addEventListener('vqfire-ready', this.onFire, { once: true });
   }
-  componentWillUnmount() { if (this.unsub) this.unsub(); if (this.unP) this.unP(); if (this.unC) this.unC(); if (this.unM) this.unM(); window.removeEventListener('vqfire-auth', this.onFire); }
+  componentWillUnmount() { if (this.unsub) this.unsub(); if (this.unP) this.unP(); if (this.unC) this.unC(); if (this.unM) this.unM(); if (this.unCoa) this.unCoa(); window.removeEventListener('vqfire-auth', this.onFire); }
   fireAttach() {
     const F = window.VQFire;
     if (this.unP) { this.unP(); this.unP = null; } if (this.unC) { this.unC(); this.unC = null; }
@@ -599,6 +625,9 @@ class Component extends DCLogic {
       this.setState({ fireEmpty: list.length === 0 });
       if (list.length) this.setState({ products: list.sort((x, y) => (x.sort || 0) - (y.sort || 0)).map(p => ({ id: p.id, name: p.name, sku: p.sku, price: p.price, stock: p.stock, pub: p.published !== false, img: p.img || '' })) });
     }, e => this.setState({ fireErr: e.code || String(e) }));
+    if (this.unCoa) this.unCoa();
+    this.unCoa = F.subscribeCoa(list => this.setState({ coaList: list.map(c => ({ id: c.id, productId: c.productId, lot: c.lot, lab: c.lab, thc: c.thc, date: c.date,
+      fileName: c.fileName || '', chunks: c.chunks || 0, url: null })) }), e => this.setState({ fireErr: e.code || String(e) }));
     if (this.unM) this.unM();
     this.unM = F.subscribeMembers(list => this.setState({ customers: list.map(m => ({ id: m.id, name: m.name || '—', email: m.email || '',
       code: m.codeAccess ? '限定製品 可' : '—', invitedBy: m.referralCode || '—', orders: 0, ltv: 0, active: m.status === 'active', status: m.status,
@@ -608,10 +637,77 @@ class Component extends DCLogic {
       issued: c.createdAt && c.createdAt.toDate ? ymd(c.createdAt.toDate()) : '', uses: c.usedCount || 0, active: !!c.active })) }); },
       e => this.setState({ fireErr: e.code || String(e) }));
   }
+  restock(lines) {
+    (lines || []).forEach(l => {
+      const p = this.state.products.find(x => x.id === l.id); if (!p) return;
+      const next = (Number(p.stock) || 0) + l.qty;
+      if (this.state.fireOn) window.VQFire.saveProduct(p.id, { stock: next }).catch(e => this.setState({ fireErr: e.code || String(e) }));
+      else this.editProduct(p.id, 'stock', String(next));
+    });
+  }
+  confirmRefund() {
+    const s = this.state, o = s.orders.find(x => x.no === s.refundFor); if (!o) return;
+    const amt = Math.min(o.total || 0, Math.max(0, parseInt(String(s.rf.amount).replace(/[^0-9]/g, ''), 10) || 0));
+    const p = { payStatus: 'refunded', refundAmount: amt, refundReason: s.rf.reason.trim(), refundedAt: VQO().today() };
+    if (o.shipStatus === 'shipped' || o.shipStatus === 'delivered' || o.shipStatus === 'preparing') p.shipStatus = 'returned';
+    const r = this.patch(o.no, p);
+    if (r && r.error) return this.setState({ fireErr: '返金できない状態です（' + r.error + '）' });
+    if (s.rf.restock) this.restock(o.lines);
+    this.setState({ refundFor: null });
+  }
+  npSet(k, v) { this.setState(s => ({ np: Object.assign({}, s.np, { [k]: v, msg: '' }) })); }
+  addProduct() {
+    const n = this.state.np, F = window.VQFire;
+    if (!n.name.trim() || !n.sku.trim() || !n.price) return this.npSet('msg', '商品名・SKU・価格を入力してください。');
+    const id = n.sku.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || ('p-' + Date.now());
+    if (this.state.products.some(p => p.id === id)) return this.npSet('msg', '同じSKUの商品がすでにあります。');
+    const data = { name: n.name.trim(), sku: n.sku.trim().toUpperCase(), price: Number(n.price) || 0, stock: Number(n.stock) || 0, category: n.cat,
+      requiresCode: n.cat === 'referral', img: n.img.trim(), published: true, sort: this.state.products.length };
+    const done = () => this.setState({ np: { name: '', sku: '', price: '', stock: '', cat: n.cat, img: '', msg: '「' + data.name + '」を追加しました。', ok: true } });
+    if (this.state.fireOn) return F.createProduct(id, data).then(done).catch(e => this.npSet('msg', F.msg(e)));
+    this.setState(s => ({ products: s.products.concat([{ id: id, name: data.name, sku: data.sku, price: data.price, stock: data.stock, pub: true, img: data.img }]) })); done();
+  }
+  removeProduct(p) {
+    if (this.state.delFor !== p.id) return this.setState({ delFor: p.id });
+    if (this.state.fireOn) window.VQFire.deleteProduct(p.id).catch(e => this.setState({ fireErr: e.code || String(e) }));
+    else this.setState(s => ({ products: s.products.filter(x => x.id !== p.id) }));
+    this.setState({ delFor: null });
+  }
+  cfSet(k, v) { this.setState(s => ({ cf: Object.assign({}, s.cf, { [k]: v, msg: '' }) })); }
+  addCoa() {
+    const c = this.state.cf, F = window.VQFire, file = this.coaFile;
+    const pid = c.productId || (this.state.products[0] && this.state.products[0].id);
+    if (!pid || !c.lot.trim()) return this.cfSet('msg', '商品とロット番号を入力してください。');
+    if (!file) return this.cfSet('msg', 'PDFファイルを選択してください。');
+    if (file.type && file.type !== 'application/pdf') return this.cfSet('msg', 'PDFファイルのみ登録できます。');
+    if (file.size > 5 * 1024 * 1024) return this.cfSet('msg', 'ファイルサイズは5MBまでです。');
+    const meta = { productId: pid, lot: c.lot.trim(), lab: c.lab.trim() || '—', thc: c.thc.trim() || '—', date: c.date ? c.date.replace(/-/g, '/') : '—' };
+    const reset = msg => { this.coaFile = null; this.setState({ cf: { productId: pid, lot: '', lab: c.lab, thc: c.thc, date: '', fileName: '', msg: msg, ok: true, busy: false } }); };
+    if (this.state.fireOn) {
+      this.setState(s => ({ cf: Object.assign({}, s.cf, { busy: true }) }));
+      return F.uploadCoa(meta, file).then(() => reset('登録しました。'))
+        .catch(e => this.setState(s => ({ cf: Object.assign({}, s.cf, { busy: false, msg: F.msg(e), ok: false }) })));
+    }
+    this.setState(s => ({ coaList: [Object.assign({ id: 'local-' + Date.now(), fileName: file.name, url: URL.createObjectURL(file) }, meta)].concat(s.coaList) }));
+    reset('登録しました（デモモード：この画面を閉じると消えます）。');
+  }
+  viewCoa(c) {
+    if (c.url) return window.open(c.url, '_blank');
+    if (!this.state.fireOn || !c.chunks) return;
+    const w = window.open('', '_blank');
+    window.VQFire.getCoaBlob(c.id).then(b => { const u = URL.createObjectURL(b); if (w) w.location.href = u; else window.open(u, '_blank'); })
+      .catch(e => { if (w) w.close(); this.setState({ fireErr: e.code || String(e) }); });
+  }
+  removeCoa(c) {
+    if (this.state.coaDelFor !== c.id) return this.setState({ coaDelFor: c.id });
+    if (this.state.fireOn && !String(c.id).startsWith('demo-')) window.VQFire.deleteCoa(c.id).catch(e => this.setState({ fireErr: e.code || String(e) }));
+    else this.setState(s => ({ coaList: s.coaList.filter(x => x.id !== c.id) }));
+    this.setState({ coaDelFor: null });
+  }
   saveProduct(p) {
     const F = window.VQFire;
     if (!this.state.fireOn) return this.setState({ savedId: p.id });
-    F.saveProduct(p.id, { price: Number(p.price) || 0, stock: Number(p.stock) || 0, published: !!p.pub })
+    F.saveProduct(p.id, { name: String(p.name || '').trim(), sku: String(p.sku || '').trim(), price: Number(p.price) || 0, stock: Number(p.stock) || 0, published: !!p.pub })
       .then(() => this.setState({ savedId: p.id })).catch(e => this.setState({ fireErr: e.code || String(e) }));
   }
   go(page) { this.setState({ page: page }); window.scrollTo(0, 0); }
@@ -649,9 +745,10 @@ class Component extends DCLogic {
     const nav = NAV.find(n => n.key === s.page) || NAV[0];
     const pByid = id => s.products.find(p => p.id === id);
     const pd = o => { if (o.createdAt && o.createdAt.toDate) return o.createdAt.toDate(); const m = /(\d+)年(\d+)月(\d+)日/.exec(o.date || ''); return m ? new Date(+m[1], m[2] - 1, +m[3]) : null; };
-    const paid = s.orders.filter(o => o.payStatus === 'paid').map(o => ({ o: o, d: pd(o) })).filter(x => x.d);
+    const net = o => o.payStatus === 'refunded' ? Math.max(0, (o.total || 0) - (o.refundAmount != null ? o.refundAmount : (o.total || 0))) : (o.total || 0);
+    const paid = s.orders.filter(o => o.payStatus === 'paid' || o.payStatus === 'refunded').map(o => ({ o: o, d: pd(o), v: net(o) })).filter(x => x.d && (x.v > 0 || x.o.payStatus === 'paid'));
     const now = new Date(), ym = d => d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0');
-    const sum = l => l.reduce((n, x) => n + (x.o.total || 0), 0);
+    const sum = l => l.reduce((n, x) => n + x.v, 0);
     const md = d => { if (!d) return null; if (d.toDate) return d.toDate(); return null; };
     const months = Array.from({ length: 6 }, (_, i) => new Date(now.getFullYear(), now.getMonth() - i, 1));
     const report = months.map(m => { const key = ym(m), l = paid.filter(x => ym(x.d) === key);
@@ -670,7 +767,7 @@ class Component extends DCLogic {
     const mixList = Object.keys(mixMap).map(id => ({ id: id, amt: mixMap[id] })).sort((p, q) => q.amt - p.amt);
     const mixTot = mixList.reduce((n, x) => n + x.amt, 0) || 1;
     const diff = (c, p) => p ? (c >= p ? '+' : '') + Math.round((c - p) / p * 100) + '%' : '—';
-    const filters = ['ALL', '入金待ち', '発送準備中', '発送済み', '配達完了'];
+    const filters = ['ALL', '入金待ち', '発送準備中', '発送済み', '配達完了', '返金済み'];
     const orders = s.orders.map(o => Object.assign({}, o, { status: stOf(o) }));
     const visible = s.orderFilter === 'ALL' ? orders : orders.filter(o => o.status === s.orderFilter);
     const low = s.products.filter(p => Number(p.stock) < 10);
@@ -709,7 +806,7 @@ class Component extends DCLogic {
         { label: '発送待ちの注文', n: orders.filter(o => o.status === '発送準備中').length, dot: '#a32222', go: () => this.setState({ page: 'orders', orderFilter: '発送準備中' }) },
         { label: '入金待ちの注文', n: orders.filter(o => o.status === '入金待ち').length, dot: '#8a6116', go: () => this.setState({ page: 'orders', orderFilter: '入金待ち' }) },
         { label: '在庫10個未満の商品', n: low.length, dot: '#8a6116', go: () => this.go('stock') },
-        { label: 'COA未添付のロット', n: COA.filter(c => c.file === '未添付').length, dot: '#a32222', go: () => this.go('coa') },
+        { label: 'COA未登録の商品', n: s.products.filter(p => !s.coaList.some(c => c.productId === p.id && c.fileName)).length, dot: '#a32222', go: () => this.go('coa') },
         { label: '停止中の紹介コード', n: s.codes.filter(c => !c.active).length, dot: '#4b5563', go: () => this.go('customers') }
       ],
       mix: mixList.map(x => ({ name: nameOf(x.id), amount: YEN(x.amt), pct: Math.round(x.amt / mixTot * 100) + '%', w: Math.round(x.amt / mixTot * 100) + '%' })),
@@ -726,7 +823,28 @@ class Component extends DCLogic {
         stBg: (ST_COLOR[o.status] || ['#f0f1f3', '#4b5563'])[0], stFg: (ST_COLOR[o.status] || ['#f0f1f3', '#4b5563'])[1],
         canAct: !!FLOW[o.status], action: s.shipFor === o.no ? '閉じる' : (FLOW[o.status] || '—'), advance: () => this.advance(o),
         canCancel: o.status === '入金待ち', cancel: () => this.patch(o.no, { payStatus: 'cancelled' }),
+        canRefund: o.status === '発送準備中' || o.status === '発送済み' || o.status === '配達完了',
+        openRefund: () => this.setState({ refundFor: s.refundFor === o.no ? null : o.no, shipFor: null, rf: { amount: String(o.total || 0), reason: '', restock: true } }),
+        refundOpen: s.refundFor === o.no,
         shipOpen: s.shipFor === o.no, shipTo: o.shipTo ? '配送先：' + o.shipTo : '' })),
+      rfAmount: s.rf.amount, rfReason: s.rf.reason, rfRestock: !!s.rf.restock,
+      setRfAmount: e => this.setState({ rf: Object.assign({}, s.rf, { amount: e.target.value.replace(/[^0-9]/g, '') }) }),
+      setRfReason: e => this.setState({ rf: Object.assign({}, s.rf, { reason: e.target.value }) }),
+      setRfRestock: e => this.setState({ rf: Object.assign({}, s.rf, { restock: e.target.checked }) }),
+      confirmRefund: () => this.confirmRefund(), closeRefund: () => this.setState({ refundFor: null }),
+      npName: s.np.name, npSku: s.np.sku, npPrice: s.np.price, npStock: s.np.stock, npCat: s.np.cat, npImg: s.np.img,
+      npMsg: s.np.msg, npHasMsg: !!s.np.msg, npMsgFg: s.np.ok ? '#1a6b3c' : '#a32222',
+      setNpName: e => this.npSet('name', e.target.value), setNpSku: e => this.npSet('sku', e.target.value.toUpperCase()),
+      setNpPrice: e => this.npSet('price', e.target.value.replace(/[^0-9]/g, '')), setNpStock: e => this.npSet('stock', e.target.value.replace(/[^0-9]/g, '')),
+      setNpCat: e => this.npSet('cat', e.target.value), setNpImg: e => this.npSet('img', e.target.value),
+      addProduct: () => this.addProduct(),
+      coaProductOpts: s.products.map(p => ({ id: p.id, name: p.name })),
+      cfProduct: s.cf.productId || (s.products[0] ? s.products[0].id : ''), cfLot: s.cf.lot, cfLab: s.cf.lab, cfThc: s.cf.thc, cfDate: s.cf.date,
+      setCfProduct: e => this.cfSet('productId', e.target.value), setCfLot: e => this.cfSet('lot', e.target.value), setCfLab: e => this.cfSet('lab', e.target.value),
+      setCfThc: e => this.cfSet('thc', e.target.value), setCfDate: e => this.cfSet('date', e.target.value),
+      setCfFile: e => { this.coaFile = e.target.files && e.target.files[0] || null; this.cfSet('fileName', this.coaFile ? this.coaFile.name : ''); },
+      addCoa: () => this.addCoa(), cfBtn: s.cf.busy ? 'アップロード中…' : '登録',
+      cfMsg: s.cf.msg, cfHasMsg: !!s.cf.msg, cfMsgFg: s.cf.ok ? '#1a6b3c' : '#a32222',
       shipCarrier: s.shipCarrier, shipTrack: s.shipTrack,
       setShipCarrier: e => this.setState({ shipCarrier: e.target.value }),
       setShipTrack: e => this.setState({ shipTrack: e.target.value }),
@@ -746,6 +864,8 @@ class Component extends DCLogic {
         stockFg: Number(p.stock) < 10 ? '#a32222' : '#16181c',
         pubLabel: p.pub ? '公開中' : '非公開',
         pubBd: p.pub ? '#1a6b3c' : '#d3d6db', pubBg: p.pub ? '#e8f3ec' : '#ffffff', pubFg: p.pub ? '#1a6b3c' : '#6b7280',
+        setName: e => this.editProduct(p.id, 'name', e.target.value), setSku: e => this.editProduct(p.id, 'sku', e.target.value.toUpperCase()),
+        removeLabel: s.delFor === p.id ? '本当に削除' : '削除', remove: () => this.removeProduct(p),
         setPrice: e => this.editProduct(p.id, 'price', e.target.value.replace(/[^0-9]/g, '')),
         setStock: e => this.editProduct(p.id, 'stock', e.target.value.replace(/[^0-9]/g, '')),
         toggle: () => this.editProduct(p.id, 'pub', !p.pub),
@@ -767,9 +887,10 @@ class Component extends DCLogic {
         toggle: () => s.fireOn ? window.VQFire.setCodeActive(r.code, !r.active).catch(e => this.setState({ fireErr: e.code || String(e) }))
           : this.setState(st => ({ codes: st.codes.map(x => x.code === r.code ? Object.assign({}, x, { active: !x.active }) : x) })) })),
 
-      coaRows: COA.map(c => { const p = pByid(c.id); return { name: p ? p.name : c.id, lot: c.lot, lab: c.lab,
-        thc: c.thc, date: c.date, file: c.file,
-        fBg: c.file === '未添付' ? '#fdeeee' : '#e8f3ec', fFg: c.file === '未添付' ? '#a32222' : '#1a6b3c' }; }),
+      coaRows: s.coaList.map(c => { const p = s.products.find(x => x.id === c.productId); return { name: p ? p.name : c.productId, lot: c.lot, lab: c.lab,
+        thc: c.thc, date: c.date, file: c.fileName || '未添付', hasFile: !!(c.url || c.chunks),
+        fFg: c.fileName ? '#1a6b3c' : '#a32222', view: () => this.viewCoa(c),
+        removeLabel: s.coaDelFor === c.id ? '本当に削除' : '削除', remove: () => this.removeCoa(c) }; }),
 
       cpCode: s.cp.code, cpValue: s.cp.value, cpUntil: s.cp.until,
       setCpCode: e => this.setState(st => ({ cp: Object.assign({}, st.cp, { code: e.target.value.toUpperCase() }) })),
