@@ -173,6 +173,7 @@ const VQFire = {
     await b.commit();
   },
 
+  saveSettings: data => setDoc(doc(db, 'settings', 'store'), data, { merge: true }),
   subscribeSettings: (cb, onErr) => onSnapshot(doc(db, 'settings', 'store'), d => cb(d.exists() ? d.data() : null), e => onErr && onErr(e)),
 
   subscribeCodes: (cb, onErr) => onSnapshot(collection(db, 'referralCodes'), s => cb(mapSnap(s)), e => onErr && onErr(e)),

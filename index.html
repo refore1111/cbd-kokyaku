@@ -1348,8 +1348,11 @@ class Component extends DCLogic {
     // PayPay: replace with the payment URL returned by the PayPay API (Create a QR Code / Web Payment)
     const addr = s.addresses.find(a => a.id === (s.shipAddr || s.defaultAddr)) || s.addresses[0];
     if (!addr) { this.setState({ my: 'addr', af: Object.assign({}, s.af, { open: true }) }); return this.go('mypage'); }
-    const rec = { no: no, date: jpDate(), pay: s.pay, payStatus: 'unpaid', shipStatus: 'pending', total: total, lines: s.cart.map(l => ({ id: l.id, qty: l.qty })),
-      memberId: s.user ? s.user.id : '', customer: s.user ? s.user.name : '', shipTo: addr ? addr.name + ' ' + addr.zip + ' ' + addr.addr : '' };
+    const rec = { no: no, date: jpDate(), pay: s.pay, payStatus: 'unpaid', shipStatus: 'pending', total: total, subtotal: sub, shippingFee: total - sub,
+      lines: s.cart.map(l => { const p = byId(l.id); return { id: l.id, qty: l.qty, name: p ? p.name : l.id, sku: p ? p.sku : '', price: p ? p.price : 0 }; }),
+      memberId: s.user ? s.user.id : '', customer: s.user ? s.user.name : '', email: s.user ? s.user.email : '',
+      shipTo: addr ? addr.name + ' ' + addr.zip + ' ' + addr.addr : '',
+      ship: addr ? { name: addr.name, zip: addr.zip, addr: addr.addr, tel: addr.tel } : null };
     const list = VQO() ? VQO().add(rec) : [rec];
     this.setState({ orders: list, done: { no: no, pay: s.pay, total: total, url: '#paypay-' + no }, cart: [] });
     this.go('thanks');

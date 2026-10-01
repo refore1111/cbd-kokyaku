@@ -67,8 +67,18 @@
     <div style="background: #ffffff; border-bottom: 1px solid #e0e2e6; padding: 15px 26px; display: flex; align-items: center; gap: 18px; position: sticky; top: 0; z-index: 10">
       <div style="font-size: 16px; font-weight: 700; letter-spacing: 0.02em">{{ pageTitle }}</div>
       <div style="font-size: 11.5px; color: #6b7280">{{ pageSub }}</div>
-      <div style="margin-left: auto; font-family: 'Roboto Mono', monospace; font-size: 11px; color: #9ca3af">{{ today }}</div>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 11px; color: {{ connFg }}; background: {{ connBg }}; border: 1px solid {{ connBd }}; padding: 5px 10px; border-radius: 999px; white-space: nowrap"><span style="width: 7px; height: 7px; border-radius: 50%; background: {{ connFg }}"></span>{{ connLabel }}</div>
+      <div style="font-family: 'Roboto Mono', monospace; font-size: 11px; color: #9ca3af">{{ today }}</div>
     </div>
+    <sc-if value="{{ connWarn }}" hint-placeholder-val="{{ false }}">
+      <div style="margin: 16px 26px 0; background: #fdeeee; border: 1px solid #f0c2c2; color: #a32222; padding: 12px 14px; border-radius: 4px; font-size: 12px; line-height: 1.8">{{ connWarnText }}</div>
+    </sc-if>
+    <sc-if value="{{ canSeed }}" hint-placeholder-val="{{ false }}">
+      <div style="margin: 16px 26px 0; background: #e8f3ec; border: 1px solid #bcd9c6; color: #1a6b3c; padding: 12px 14px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+        <span>Firebase に商品データがありません。初期データ（商品7点・共通設定・紹介コード3件）を投入できます。</span>
+        <button type="button" onClick="{{ seedFire }}" style="margin-left: auto; border: none; background: #1a6b3c; color: #ffffff; padding: 6px 14px; font-size: 11px; font-weight: 700; border-radius: 3px; cursor: pointer">{{ seedLabel }}</button>
+      </div>
+    </sc-if>
 
     <div style="padding: 24px 26px 60px">
 
@@ -145,14 +155,21 @@
               <sc-if value="{{ isDemoData }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ resetOrders }}" style="border: 1px solid #bcd9c6; background: #ffffff; color: #1a6b3c; padding: 5px 10px; font-size: 11px; border-radius: 3px; cursor: pointer">デモデータに戻す</button></sc-if>
             </span>
           </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; padding: 12px 14px; margin-bottom: 14px">
+            <span style="font-size: 11.5px; font-weight: 700; margin-right: 6px">発送準備中 {{ prepCount }}件</span>
+            <button type="button" onClick="{{ printPrep }}" style="border: 1px solid #d3d6db; background: #ffffff; color: #16181c; padding: 7px 12px; font-size: 11.5px; border-radius: 3px; cursor: pointer" style-hover="border-color:#1a6b3c;color:#1a6b3c">納品書を一括印刷</button>
+            <button type="button" onClick="{{ exportB2 }}" style="border: none; background: #16181c; color: #ffffff; padding: 8px 12px; font-size: 11.5px; border-radius: 3px; cursor: pointer" style-hover="background:#1a6b3c">B2クラウド用CSVを出力</button>
+            <label style="border: 1px solid #d3d6db; background: #ffffff; color: #16181c; padding: 7px 12px; font-size: 11.5px; border-radius: 3px; cursor: pointer">追跡番号CSVを取込<input type="file" accept=".csv,text/csv" onChange="{{ importTracking }}" style="display: none" /></label>
+            <sc-if value="{{ hasB2Msg }}" hint-placeholder-val="{{ false }}"><span style="font-size: 11.5px; color: {{ b2Fg }}">{{ b2Msg }}</span></sc-if>
+          </div>
           <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; overflow-x: auto">
-            <div style="min-width: 960px">
-              <div style="display: grid; grid-template-columns: 138px 104px minmax(0, 1fr) 72px 48px 92px 116px 112px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e0e2e6; background: #f7f8f9; font-size: 11px; font-weight: 700; color: #4b5563">
+            <div style="min-width: 1080px">
+              <div style="display: grid; grid-template-columns: 138px 104px minmax(0, 1fr) 72px 48px 92px 116px 172px; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #e0e2e6; background: #f7f8f9; font-size: 11px; font-weight: 700; color: #4b5563">
                 <span>注文番号</span><span>受注日</span><span>顧客</span><span>支払</span><span>点数</span><span>金額</span><span>ステータス</span><span>操作</span>
               </div>
               <sc-for list="{{ orderRows }}" as="o" hint-placeholder-count="8">
                 <div style="border-bottom: 1px solid #eceef1">
-                <div style="display: grid; grid-template-columns: 138px 104px minmax(0, 1fr) 72px 48px 92px 116px 112px; gap: 12px; padding: 12px 16px; font-size: 12px; align-items: center">
+                <div style="display: grid; grid-template-columns: 138px 104px minmax(0, 1fr) 72px 48px 92px 116px 172px; gap: 12px; padding: 12px 16px; font-size: 12px; align-items: center">
                   <span style="font-family: 'Roboto Mono', monospace; font-size: 11.5px">{{ o.no }}</span>
                   <span style="font-size: 11px; color: #6b7280">{{ o.date }}</span>
                   <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ o.customer }}<span style="color: #9ca3af; margin-left: 8px; font-size: 11px">{{ o.memberId }}</span></span>
@@ -160,7 +177,7 @@
                   <span style="font-family: 'Roboto Mono', monospace; text-align: right">{{ o.qty }}</span>
                   <span style="font-family: 'Roboto Mono', monospace; text-align: right">¥{{ o.total }}</span>
                   <span style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start"><span style="background: {{ o.stBg }}; color: {{ o.stFg }}; padding: 4px 9px; font-size: 10.5px; border-radius: 2px; white-space: nowrap">{{ o.status }}</span><span style="font-family: 'Roboto Mono', monospace; font-size: 10px; color: #9ca3af">{{ o.sub }}</span></span>
-                  <span style="display: flex; gap: 6px"><sc-if value="{{ o.canAct }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.advance }}" style="border: 1px solid #d3d6db; background: #ffffff; color: #16181c; padding: 6px 10px; font-size: 11px; border-radius: 3px; cursor: pointer; white-space: nowrap" style-hover="border-color:#1a6b3c;color:#1a6b3c">{{ o.action }}</button></sc-if><sc-if value="{{ o.canCancel }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.cancel }}" style="border: none; background: transparent; color: #9ca3af; padding: 6px 4px; font-size: 11px; cursor: pointer; text-decoration: underline" style-hover="color:#a32222">取消</button></sc-if><sc-if value="{{ o.canRefund }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.openRefund }}" style="border: none; background: transparent; color: #9ca3af; padding: 6px 4px; font-size: 11px; cursor: pointer; text-decoration: underline; white-space: nowrap" style-hover="color:#a32222">返品・返金</button></sc-if></span>
+                  <span style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center"><sc-if value="{{ o.canPrint }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.print }}" title="領収書兼納品書を印刷" style="border: 1px solid #d3d6db; background: #ffffff; color: #4b5563; padding: 6px 8px; font-size: 11px; border-radius: 3px; cursor: pointer; white-space: nowrap" style-hover="border-color:#1a6b3c;color:#1a6b3c">納品書</button></sc-if><sc-if value="{{ o.canAct }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ o.advance }}" style="border: 1px solid #d3d6db; background: #ffffff; color: #16181c; padding: 6px 10px; font-size: 11px; border-radius: 3px; cursor: pointer; white-space: nowrap" style-hover="border-color:#1a6b3c;color:#1a6b3c">{{ o.action }}</button></sc-if><sc-if value="{{ o.canCancel }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.cancel }}" style="border: none; background: transparent; color: #9ca3af; padding: 6px 4px; font-size: 11px; cursor: pointer; text-decoration: underline" style-hover="color:#a32222">取消</button></sc-if><sc-if value="{{ o.canRefund }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ o.openRefund }}" style="border: none; background: transparent; color: #9ca3af; padding: 6px 4px; font-size: 11px; cursor: pointer; text-decoration: underline; white-space: nowrap" style-hover="color:#a32222">返品・返金</button></sc-if></span>
                 </div>
                 <sc-if value="{{ o.refundOpen }}" hint-placeholder-val="{{ false }}">
                   <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; padding: 12px 16px 16px; background: #fdf6f6; border-top: 1px dashed #f0c2c2">
@@ -424,6 +441,52 @@
         </div>
       </sc-if>
 
+      <sc-if value="{{ isShip }}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; align-items: start">
+          <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; padding: 18px">
+            <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px">B2クラウド連携</div>
+            <div style="font-size: 11.5px; color: #6b7280; line-height: 1.8; margin-bottom: 16px">送り状発行用CSVに入るご依頼主情報と契約情報です。</div>
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <sc-for list="{{ b2Fields }}" as="fd" hint-placeholder-count="6">
+                <label style="display: block">
+                  <span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">{{ fd.label }}</span>
+                  <input type="text" value="{{ fd.value }}" onChange="{{ fd.set }}" placeholder="{{ fd.ph }}" style="width: 100%; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px" />
+                </label>
+              </sc-for>
+              <label style="display: block">
+                <span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">送り状種類</span>
+                <select value="{{ slipType }}" onChange="{{ setSlipType }}" style="width: 100%; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px; background: #ffffff">
+                  <sc-for list="{{ slipOpts }}" as="op" hint-placeholder-count="4"><option value="{{ op.v }}">{{ op.label }}</option></sc-for>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div style="background: #ffffff; border: 1px solid #e0e2e6; border-radius: 4px; padding: 18px">
+              <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px">領収書兼納品書の発行者</div>
+              <div style="font-size: 11.5px; color: #6b7280; line-height: 1.8; margin-bottom: 16px">印刷する帳票の右上に表示されます。</div>
+              <div style="display: flex; flex-direction: column; gap: 12px">
+                <sc-for list="{{ issuerFields }}" as="fd" hint-placeholder-count="4">
+                  <label style="display: block">
+                    <span style="display: block; font-size: 11px; font-weight: 500; color: #4b5563; margin-bottom: 6px">{{ fd.label }}</span>
+                    <input type="text" value="{{ fd.value }}" onChange="{{ fd.set }}" placeholder="{{ fd.ph }}" style="width: 100%; box-sizing: border-box; border: 1px solid #d3d6db; border-radius: 3px; padding: 8px 10px; font-size: 12px" />
+                  </label>
+                </sc-for>
+              </div>
+            </div>
+            <button type="button" onClick="{{ saveShipCfg }}" style="border: none; background: #16181c; color: #ffffff; padding: 12px 18px; font-size: 12.5px; font-weight: 700; border-radius: 3px; cursor: pointer" style-hover="background:#1a6b3c">{{ shipSaveLabel }}</button>
+            <div style="background: #fff9e8; border: 1px solid #ecd9a0; border-radius: 4px; padding: 14px 16px; font-size: 12px; line-height: 1.9; color: #6b5a25">
+              <b>出荷の流れ</b><br />
+              1. 注文管理で「B2クラウド用CSVを出力」<br />
+              2. B2クラウド「外部データから発行」で取り込み、送り状を印刷<br />
+              3. 「納品書を一括印刷」して同梱<br />
+              4. B2クラウドの発行済データから、伝票番号入りのCSVを出力<br />
+              5. 注文管理で「追跡番号CSVを取込」→ 自動で発送済みになり、会員の注文履歴に反映
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
       <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
         <div>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 18px">
@@ -495,7 +558,8 @@ const NAV = [
   { key: 'coa', label: 'COA／分析書管理', title: 'COA／分析書管理', sub: 'ロットごとの成分分析書' },
   { key: 'coupon', label: 'クーポン発行', title: 'クーポン発行', sub: '割引コードの作成と停止' },
   { key: 'mail', label: 'メルマガ配信', title: 'メルマガ配信', sub: '受信同意済み会員への配信' },
-  { key: 'report', label: '売上レポート', title: '売上レポート', sub: '月次推移と紹介経由の内訳' }
+  { key: 'report', label: '売上レポート', title: '売上レポート', sub: '月次推移と紹介経由の内訳' },
+  { key: 'ship', label: '出荷・帳票設定', title: '出荷・帳票設定', sub: 'B2クラウド連携と納品書の発行者情報' }
 ];
 
 const ADMIN = { email: 'admin@v-q.jp', pw: 'vqadmin', name: '管理者', role: 'オーナー' };
@@ -586,13 +650,45 @@ const STAFF = [
 const CHART = [62, 71, 48, 83, 96, 74, 58, 88, 102, 91, 67, 79, 114, 97];
 const PERM_LABELS = [['orders', '注文'], ['products', '商品'], ['customers', '顧客'], ['sales', '売上']];
 
+const SHIP_DEFAULT = {
+  senderName: 'V_Q Store', senderZip: '', senderAddr: '', senderTel: '',
+  billingCode: '', billingClass: '', freightNo: '01', slipType: '0', itemName: 'リキッド', handling: '',
+  issuerName: 'V_Q Store', issuerPerson: '高木 三暉', issuerEmail: '', invoiceNo: ''
+};
+const STORE_ITEMS = {
+  'vq-day': ['v_Q DAY — CITRUS 1.0 mL', 'VQ-DAY-CT10', 4980], 'vq-night': ['v_Q NIGHT — CBX 1.0 mL', 'VQ-NGT-GL10', 4980],
+  'vq-chill': ['v_Q CHILL — OG KUSH 1.0 mL', 'VQ-CHL-OG10', 4980], 'vq-focus': ['v_Q FOCUS — LEMON HAZE 1.0 mL', 'VQ-FCS-LH10', 4980],
+  'vq-tron': ['v_Q CBX — TRON Pro 1.0 mL', 'VQ-CBX-TRN10', 6980], 'vq-glo': ['v_Q CBX — GLO Pro 1.0 mL', 'VQ-CBX-GLO10', 7480],
+  'vq-set': ['v_Q VIBE SET — 4本セット', 'VQ-SET-4', 17800]
+};
+const SLIP_TYPES = [['0', '発払い（宅急便）'], ['8', '宅急便コンパクト'], ['A', 'ネコポス'], ['7', 'クロネコゆうパケット']];
+const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const zen = (v, n) => { const t = String(v || ''); return [t.slice(0, n), t.slice(n)]; };
+const ymdSlash = d => d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
+const B2_HEAD = ['お客様管理番号', '送り状種類', 'クール区分', '伝票番号', '出荷予定日', 'お届け予定日', '配達時間帯', 'お届け先コード', 'お届け先電話番号', 'お届け先電話番号枝番', 'お届け先郵便番号', 'お届け先住所', 'お届け先アパートマンション名', 'お届け先会社・部門１', 'お届け先会社・部門２', 'お届け先名', 'お届け先名(ｶﾅ)', '敬称', 'ご依頼主コード', 'ご依頼主電話番号', 'ご依頼主電話番号枝番', 'ご依頼主郵便番号', 'ご依頼主住所', 'ご依頼主アパートマンション', 'ご依頼主名', 'ご依頼主名(ｶﾅ)', '品名コード１', '品名１', '品名コード２', '品名２', '荷扱い１', '荷扱い２', '記事', 'コレクト代金引換額（税込)', '内消費税額等', '止置き', '営業所コード', '発行枚数', '個数口表示フラグ', '請求先顧客コード', '請求先分類コード', '運賃管理番号'];
+const csvCell = v => { const t = String(v == null ? '' : v); return /[",\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+const parseCsv = text => { const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) { const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true; else if (c === ',') { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += c; }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim())); };
+const loadEncoding = () => window.Encoding ? Promise.resolve(window.Encoding) : new Promise((res, rej) => {
+  const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/encoding-japanese@2.2.0/encoding.min.js';
+  sc.onload = () => res(window.Encoding); sc.onerror = rej; document.head.appendChild(sc); });
+
+const isProd = () => !!window.VQ_PROD || /github\.io$/.test(location.hostname);
+
 class Component extends DCLogic {
   state = { auth: false, email: '', pw: '', err: '', page: 'dash', orderFilter: 'ALL',
     orders: [], shipFor: null, shipCarrier: 'ヤマト運輸', shipTrack: '',
+    shipCfg: Object.assign({}, SHIP_DEFAULT), shipSaved: false, b2Msg: '', b2Ok: true,
     refundFor: null, rf: { amount: '', reason: '', restock: true },
     np: { name: '', sku: '', price: '', stock: '', cat: 'cbd', img: '', msg: '', ok: false }, delFor: null,
-    coaList: COA.map((c, i) => ({ id: 'demo-' + i, productId: c.id, lot: c.lot, lab: c.lab, thc: c.thc, date: c.date, fileName: c.file === '未添付' ? '' : 'sample.pdf', url: null })),
-    cf: { productId: '', lot: '', lab: '', thc: '0.00%（不検出）', date: '', fileName: '', msg: '', ok: false, busy: false }, coaDelFor: null, products: PRODUCTS, customers: CUSTOMERS, codes: CODES, coupons: COUPONS, staff: STAFF,
+    coaList: (isProd() ? [] : COA).map((c, i) => ({ id: 'demo-' + i, productId: c.id, lot: c.lot, lab: c.lab, thc: c.thc, date: c.date, fileName: c.file === '未添付' ? '' : 'sample.pdf', url: null })),
+    cf: { productId: '', lot: '', lab: '', thc: '0.00%（不検出）', date: '', fileName: '', msg: '', ok: false, busy: false }, coaDelFor: null, products: isProd() ? [] : PRODUCTS, customers: isProd() ? [] : CUSTOMERS, codes: isProd() ? [] : CODES, coupons: COUPONS, staff: STAFF,
     savedId: null, issueTo: '', segment: 'all',
     cp: { code: '', value: '', until: '' },
     ml: { subject: '', body: '' }, sent: false,
@@ -609,22 +705,26 @@ class Component extends DCLogic {
       this.setState({ orders: VQO().load() });
       this.unsub = VQO().subscribe(list => this.setState({ orders: list })); };
     start();
+    try { const v = JSON.parse(localStorage.getItem('vq_shipcfg')); if (v) this.setState({ shipCfg: Object.assign({}, SHIP_DEFAULT, v) }); } catch (e) {}
     this.onFire = () => this.fireAttach();
     window.addEventListener('vqfire-auth', this.onFire);
     if (window.VQFire) this.fireAttach(); else window.addEventListener('vqfire-ready', this.onFire, { once: true });
   }
-  componentWillUnmount() { if (this.unsub) this.unsub(); if (this.unP) this.unP(); if (this.unC) this.unC(); if (this.unM) this.unM(); if (this.unCoa) this.unCoa(); window.removeEventListener('vqfire-auth', this.onFire); }
+  componentWillUnmount() { if (this.unsub) this.unsub(); if (this.unP) this.unP(); if (this.unC) this.unC(); if (this.unM) this.unM(); if (this.unCoa) this.unCoa(); if (this.unSet) this.unSet(); window.removeEventListener('vqfire-auth', this.onFire); }
   fireAttach() {
     const F = window.VQFire;
     if (this.unP) { this.unP(); this.unP = null; } if (this.unC) { this.unC(); this.unC = null; }
     const on = !!(F && F.user && F.user.role === 'admin');
-    this.setState({ fireOn: on });
+    this.setState({ fireOn: on, fireUser: F && F.user ? F.user.email + '（' + (F.user.role === 'admin' ? '管理者' : '会員') + '）' : '' });
     if (!on) return;
+    this.setState({ products: [], customers: [], codes: [], coaList: [], fireErr: null, fireLoaded: false });
     const ymd = d => d.getFullYear() + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0');
     this.unP = F.subscribeProducts(list => {
-      this.setState({ fireEmpty: list.length === 0 });
-      if (list.length) this.setState({ products: list.sort((x, y) => (x.sort || 0) - (y.sort || 0)).map(p => ({ id: p.id, name: p.name, sku: p.sku, price: p.price, stock: p.stock, pub: p.published !== false, img: p.img || '' })) });
+      this.setState({ fireEmpty: list.length === 0, fireLoaded: true });
+      this.setState({ products: list.sort((x, y) => (x.sort || 0) - (y.sort || 0)).map(p => ({ id: p.id, name: p.name, sku: p.sku, price: p.price, stock: p.stock, pub: p.published !== false, img: p.img || '' })) });
     }, e => this.setState({ fireErr: e.code || String(e) }));
+    if (this.unSet) this.unSet();
+    this.unSet = F.subscribeSettings(st => { if (st) this.setState({ storeSettings: st }); if (st && st.shipping) this.setState({ shipCfg: Object.assign({}, SHIP_DEFAULT, st.shipping) }); }, e => this.setState({ fireErr: e.code || String(e) }));
     if (this.unCoa) this.unCoa();
     this.unCoa = F.subscribeCoa(list => this.setState({ coaList: list.map(c => ({ id: c.id, productId: c.productId, lot: c.lot, lab: c.lab, thc: c.thc, date: c.date,
       fileName: c.fileName || '', chunks: c.chunks || 0, url: null })) }), e => this.setState({ fireErr: e.code || String(e) }));
@@ -633,9 +733,128 @@ class Component extends DCLogic {
       code: m.codeAccess ? '限定製品 可' : '—', invitedBy: m.referralCode || '—', orders: 0, ltv: 0, active: m.status === 'active', status: m.status,
       joined: m.createdAt && m.createdAt.toDate ? m.createdAt.toDate() : null })) }),
       e => this.setState({ fireErr: e.code || String(e) }));
-    this.unC = F.subscribeCodes(list => { if (list.length) this.setState({ codes: list.map(c => ({ code: c.id, owner: c.label || '—',
+    this.unC = F.subscribeCodes(list => { this.setState({ codes: list.map(c => ({ code: c.id, owner: c.label || '—',
       issued: c.createdAt && c.createdAt.toDate ? ymd(c.createdAt.toDate()) : '', uses: c.usedCount || 0, active: !!c.active })) }); },
       e => this.setState({ fireErr: e.code || String(e) }));
+  }
+  orderLines(o) {
+    return (o.lines || []).map(l => { const p = this.state.products.find(x => x.id === l.id), f = STORE_ITEMS[l.id];
+      const saved = l.price != null;
+      const price = saved ? Number(l.price) : p && Number(p.price) ? Number(p.price) : f ? f[2] : 0;
+      return { name: l.name || (p ? p.name : f ? f[0] : '商品（' + l.id + '）'), sku: l.sku || (p ? p.sku : f ? f[1] : ''), qty: l.qty,
+        price: price, amount: price * l.qty, saved: saved }; });
+  }
+  orderMoney(o) {
+    const lines = this.orderLines(o), total = Number(o.total) || 0;
+    const allSaved = lines.length > 0 && lines.every(l => l.saved);
+    const st = this.state.storeSettings || {}, th = st.freeShippingThreshold != null ? st.freeShippingThreshold : 8000, fr = st.shippingFee != null ? st.shippingFee : 550;
+    const listed = lines.reduce((n, l) => n + l.amount, 0);
+    let fee;
+    if (o.shippingFee != null) fee = Number(o.shippingFee);
+    else if (allSaved) fee = Math.max(0, total - listed);
+    else fee = total >= th ? 0 : Math.min(fr, total);
+    const target = Math.max(0, total - fee);
+    if (!allSaved && lines.length && listed !== target) {
+      let acc = 0;
+      lines.forEach((l, i) => {
+        l.amount = i === lines.length - 1 ? target - acc : (listed ? Math.round(l.amount * target / listed) : Math.floor(target / lines.length));
+        acc += l.amount; l.price = Math.round(l.amount / (l.qty || 1));
+      });
+    }
+    const sub = lines.reduce((n, l) => n + l.amount, 0);
+    return { lines: lines, sub: sub, fee: fee, total: total || sub + fee };
+  }
+  shipParts(o) {
+    if (o.ship) return o.ship;
+    const t = String(o.shipTo || ''), m = /(〒?\d{3}-?\d{4})/.exec(t);
+    if (!m) return { name: o.customer || '', zip: '', addr: t, tel: '' };
+    return { name: t.slice(0, m.index).trim() || o.customer || '', zip: m[1], addr: t.slice(m.index + m[1].length).trim(), tel: '' };
+  }
+  receiptHtml(o) {
+    const c = this.state.shipCfg, sp = this.shipParts(o), mny = this.orderMoney(o);
+    const lines = mny.lines, sub = mny.sub, fee = mny.fee, total = mny.total;
+    const refund = o.payStatus === 'refunded' ? (o.refundAmount || 0) : 0;
+    const rows = lines.map(l => '<tr><td>' + esc(l.name) + '<div class="sku">' + esc(l.sku) + '</div></td><td class="r">' + l.qty + '</td><td class="r">¥' + YEN(l.price) + '</td><td class="r">¥' + YEN(l.amount) + '</td></tr>').join('');
+    return '<section class="page">' +
+      '<div class="top"><div><div class="ttl">領収書 兼 納品書</div><div class="meta">注文番号 ' + esc(o.no) + '<br>注文日 ' + esc(o.date) + '<br>発行日 ' + ymdSlash(new Date()) + '</div></div>' +
+      '<div class="from"><b>' + esc(c.issuerName) + '</b><br>' + esc(c.issuerPerson) + (c.issuerEmail ? '<br>' + esc(c.issuerEmail) : '') + (c.invoiceNo ? '<br>登録番号 ' + esc(c.invoiceNo) : '') + '</div></div>' +
+      '<div class="to"><div class="nm">' + esc(o.customer || sp.name) + ' 様</div><div class="ad">お届け先：' + esc(sp.zip) + ' ' + esc(sp.addr) + '<br>' + esc(sp.name) + (sp.tel ? '　TEL ' + esc(sp.tel) : '') + '</div></div>' +
+      '<div class="amt"><span>領収金額（税込）</span><b>¥' + YEN(total - refund) + '</b></div>' +
+      '<p class="note">上記の金額を正に領収いたしました。<br>お支払い方法：' + (o.pay === 'paypay' ? 'PayPay' : '銀行振込') + (o.paidAt ? '（' + esc(o.paidAt) + ' 入金確認）' : '') + '</p>' +
+      '<table><thead><tr><th>商品</th><th class="r">数量</th><th class="r">単価（税込）</th><th class="r">金額（税込）</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<table class="sum"><tr><td>小計</td><td class="r">¥' + YEN(sub) + '</td></tr><tr><td>送料</td><td class="r">' + (fee ? '¥' + YEN(fee) : '無料') + '</td></tr>' +
+      (refund ? '<tr><td>返金</td><td class="r">−¥' + YEN(refund) + '</td></tr>' : '') +
+      '<tr class="tot"><td>合計（税込）</td><td class="r">¥' + YEN(total - refund) + '</td></tr><tr><td>（内消費税 10%対象）</td><td class="r">¥' + YEN(Math.floor((total - refund) * 10 / 110)) + '</td></tr></table>' +
+      '<p class="foot">このたびはご注文いただき誠にありがとうございます。<br>20歳未満の方のご使用はお控えください。</p></section>';
+  }
+  printReceipts(list) {
+    if (!list.length) return this.setState({ b2Msg: '印刷できる注文がありません。', b2Ok: false });
+    const css = '@page{size:A4;margin:16mm}*{box-sizing:border-box}body{margin:0;font-family:"Noto Sans JP","Hiragino Sans",sans-serif;color:#16181c;font-size:11pt}' +
+      '.page{page-break-after:always;padding:4mm 0}.page:last-child{page-break-after:auto}.top{display:flex;justify-content:space-between;gap:20px;margin-bottom:18px}' +
+      '.ttl{font-size:20pt;font-weight:700;letter-spacing:.1em;margin-bottom:8px}.meta{font-size:9.5pt;color:#4b5563;line-height:1.8}.from{text-align:right;font-size:9.5pt;line-height:1.8}' +
+      '.to{border-bottom:1px solid #16181c;padding-bottom:10px;margin-bottom:14px}.nm{font-size:15pt;font-weight:700;margin-bottom:6px}.ad{font-size:9.5pt;color:#4b5563;line-height:1.7}' +
+      '.amt{display:flex;justify-content:space-between;align-items:baseline;background:#f3f4f6;padding:12px 16px;margin-bottom:8px}.amt b{font-size:18pt}.note{font-size:9.5pt;line-height:1.8;margin:0 0 16px}' +
+      'table{width:100%;border-collapse:collapse;font-size:10pt}th{text-align:left;border-bottom:1.5px solid #16181c;padding:7px 6px;font-weight:700}td{border-bottom:1px solid #e0e2e6;padding:8px 6px;vertical-align:top}' +
+      '.r{text-align:right;white-space:nowrap}.sku{font-size:8pt;color:#9ca3af;margin-top:2px}.sum{width:52%;margin:12px 0 0 auto}.sum td{border:none;padding:4px 6px}.sum .tot td{border-top:1.5px solid #16181c;font-weight:700;font-size:12pt;padding-top:8px}' +
+      '.foot{margin-top:28px;font-size:8.5pt;color:#6b7280;line-height:1.8}';
+    const html = '<!doctype html><html><head><meta charset="utf-8"><title>領収書兼納品書</title><style>' + css + '</style></head><body>' + list.map(o => this.receiptHtml(o)).join('') + '<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>';
+    const w = window.open('', '_blank');
+    if (!w) return this.setState({ b2Msg: 'ポップアップがブロックされました。ブラウザでこのサイトのポップアップを許可してください。', b2Ok: false });
+    w.document.open(); w.document.write(html); w.document.close();
+  }
+  async exportB2() {
+    const c = this.state.shipCfg;
+    const targets = this.state.orders.filter(o => o.payStatus === 'paid' && (o.shipStatus === 'preparing' || o.shipStatus === 'pending'));
+    if (!targets.length) return this.setState({ b2Msg: '発送準備中の注文がありません。', b2Ok: false });
+    if (!c.senderTel || !c.senderZip || !c.senderAddr || !c.billingCode) return this.setState({ b2Msg: '「出荷・帳票設定」でご依頼主情報と請求先顧客コードを入力してください。', b2Ok: false, page: 'ship' });
+    const day = ymdSlash(new Date());
+    const rows = targets.map(o => { const sp = this.shipParts(o); const [ad1, ad2] = zen(sp.addr, 32); const [sa1, sa2] = zen(c.senderAddr, 32);
+      const r = {}; B2_HEAD.forEach(h => r[h] = '');
+      Object.assign(r, { 'お客様管理番号': o.no, '送り状種類': c.slipType || '0', 'クール区分': '0', '出荷予定日': day,
+        'お届け先電話番号': sp.tel || '', 'お届け先郵便番号': String(sp.zip || '').replace(/[〒\s]/g, ''), 'お届け先住所': ad1, 'お届け先アパートマンション名': ad2.slice(0, 16),
+        'お届け先名': String(sp.name || o.customer || '').replace(/（.*?）|\(.*?\)/g, '').slice(0, 16), '敬称': '様',
+        'ご依頼主電話番号': c.senderTel, 'ご依頼主郵便番号': c.senderZip.replace(/[〒\s]/g, ''), 'ご依頼主住所': sa1, 'ご依頼主アパートマンション': sa2.slice(0, 16), 'ご依頼主名': c.senderName.slice(0, 16),
+        '品名１': (c.itemName || '').slice(0, 25), '荷扱い１': c.handling || '', '記事': o.no,
+        '発行枚数': '1', '請求先顧客コード': c.billingCode, '請求先分類コード': c.billingClass || '', '運賃管理番号': c.freightNo || '01' });
+      return B2_HEAD.map(h => csvCell(r[h])).join(','); });
+    const text = [B2_HEAD.map(csvCell).join(',')].concat(rows).join('\r\n') + '\r\n';
+    let blob;
+    try { const E = await loadEncoding(); const arr = E.convert(E.stringToCode(text), { to: 'SJIS', from: 'UNICODE' }); blob = new Blob([new Uint8Array(arr)], { type: 'text/csv' }); }
+    catch (e) { blob = new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8' }); }
+    const u = URL.createObjectURL(blob), el = document.createElement('a');
+    el.href = u; el.download = 'b2_' + day.replace(/\//g, '') + '.csv'; document.body.appendChild(el); el.click(); el.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 2000);
+    this.setState({ b2Msg: targets.length + '件のB2クラウド取込用CSVを出力しました。', b2Ok: true });
+  }
+  importTracking(file) {
+    if (!file) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      let text = '';
+      try { text = new TextDecoder('shift_jis').decode(new Uint8Array(rd.result)); } catch (e) {}
+      if (!/お客様管理番号|伝票番号|VQ-/.test(text)) text = new TextDecoder('utf-8').decode(new Uint8Array(rd.result));
+      const rows = parseCsv(text); if (!rows.length) return this.setState({ b2Msg: 'CSVを読み込めませんでした。', b2Ok: false });
+      const head = rows[0].map(h => h.trim());
+      const ci = head.findIndex(h => /お客様管理番号/.test(h)), ti = head.findIndex(h => /^伝票番号|送り状番号|問い?合せ?番号/.test(h));
+      const body = ci >= 0 ? rows.slice(1) : rows;
+      let ok = 0, skip = 0; const today = VQO().today();
+      body.forEach(r => {
+        const no = ci >= 0 ? (r[ci] || '').trim() : (r.find(x => /^VQ-\d{6}-\d+$/.test(x.trim())) || '').trim();
+        const tr = ti >= 0 ? (r[ti] || '').replace(/[^0-9]/g, '') : ((r.find(x => /^\d{4}-?\d{4}-?\d{4}$/.test(x.trim())) || '').replace(/[^0-9]/g, ''));
+        const o = this.state.orders.find(x => x.no === no);
+        if (!o || !tr || o.payStatus !== 'paid' || (o.shipStatus !== 'preparing' && o.shipStatus !== 'pending')) { skip++; return; }
+        if (o.shipStatus === 'pending') this.patch(o.no, { shipStatus: 'preparing' });
+        const res = this.patch(o.no, { shipStatus: 'shipped', shippedAt: today, carrier: 'ヤマト運輸', trackNo: tr.replace(/(\d{4})(\d{4})(\d{4})/, '$1-$2-$3') });
+        if (res && !res.error) ok++; else skip++;
+      });
+      this.setState({ b2Msg: '追跡番号を ' + ok + '件 登録し、発送済みにしました。' + (skip ? '（対象外 ' + skip + '件）' : ''), b2Ok: ok > 0 });
+    };
+    rd.readAsArrayBuffer(file);
+  }
+  saveShipCfg() {
+    const F = window.VQFire;
+    if (this.state.fireOn) F.saveSettings({ shipping: this.state.shipCfg }).then(() => this.setState({ shipSaved: true })).catch(e => this.setState({ fireErr: e.code || String(e) }));
+    else { try { localStorage.setItem('vq_shipcfg', JSON.stringify(this.state.shipCfg)); } catch (e) {} this.setState({ shipSaved: true }); }
   }
   restock(lines) {
     (lines || []).forEach(l => {
@@ -785,6 +1004,14 @@ class Component extends DCLogic {
       staffName: ADMIN.name, staffRole: ADMIN.role,
       today: t.getFullYear() + '/' + String(t.getMonth() + 1).padStart(2, '0') + '/' + String(t.getDate()).padStart(2, '0'),
       pageTitle: nav.title, pageSub: nav.sub,
+      connLabel: s.fireErr ? 'Firebase エラー' : s.fireOn ? 'Firebase 接続中' : 'デモデータ表示中',
+      connFg: s.fireErr ? '#a32222' : s.fireOn ? '#1a6b3c' : '#8a6116',
+      connBg: s.fireErr ? '#fdeeee' : s.fireOn ? '#e8f3ec' : '#fff5e3',
+      connBd: s.fireErr ? '#f0c2c2' : s.fireOn ? '#bcd9c6' : '#ecd9a0',
+      connWarn: !!s.fireErr || !s.fireOn,
+      connWarnText: s.fireErr ? 'Firebase からデータを読み込めません（' + s.fireErr + '）。Firestore の「ルール」が最新か、Firestore の admins コレクションにこのアカウントの UID が登録されているか確認してください。'
+        : (window.VQFire && window.VQFire.user) ? 'ログイン中のアカウント ' + (s.fireUser || '') + ' は管理者として登録されていないため、ストアのデータを表示できません。Firestore の admins コレクションに、このアカウントの UID のドキュメントを作成してください。'
+        : 'デモ用アカウントでログインしているため、表示されているのはデモデータです。ストアのデータを扱うには、Firebase に登録した管理者アカウントでログインしてください。',
       nav: NAV.map(n => ({ label: n.label,
         bg: s.page === n.key ? '#20242a' : 'transparent',
         fg: s.page === n.key ? '#ffffff' : '#a8aeb6',
@@ -792,7 +1019,7 @@ class Component extends DCLogic {
         select: () => this.go(n.key) })),
       isDash: s.page === 'dash', isOrders: s.page === 'orders', isProducts: s.page === 'products',
       isCustomers: s.page === 'customers', isCoa: s.page === 'coa', isCoupon: s.page === 'coupon',
-      isMail: s.page === 'mail', isReport: s.page === 'report', isStock: s.page === 'stock', isStaff: s.page === 'staff',
+      isMail: s.page === 'mail', isReport: s.page === 'report', isShip: s.page === 'ship', isStock: s.page === 'stock', isStaff: s.page === 'staff',
 
       kpis: [
         { label: '当月売上（税込・入金済み）', value: '¥' + YEN(cur.sales), delta: '前月比 ' + diff(cur.sales, prev.sales), dFg: cur.sales >= prev.sales ? '#1a6b3c' : '#a32222' },
@@ -826,7 +1053,21 @@ class Component extends DCLogic {
         canRefund: o.status === '発送準備中' || o.status === '発送済み' || o.status === '配達完了',
         openRefund: () => this.setState({ refundFor: s.refundFor === o.no ? null : o.no, shipFor: null, rf: { amount: String(o.total || 0), reason: '', restock: true } }),
         refundOpen: s.refundFor === o.no,
+        canPrint: o.payStatus === 'paid' || o.payStatus === 'refunded', print: () => this.printReceipts([o]),
         shipOpen: s.shipFor === o.no, shipTo: o.shipTo ? '配送先：' + o.shipTo : '' })),
+      prepCount: s.orders.filter(o => o.payStatus === 'paid' && (o.shipStatus === 'preparing' || o.shipStatus === 'pending')).length,
+      printPrep: () => this.printReceipts(s.orders.filter(o => o.payStatus === 'paid' && (o.shipStatus === 'preparing' || o.shipStatus === 'pending'))),
+      exportB2: () => this.exportB2(),
+      importTracking: e => { const fl = e.target.files && e.target.files[0]; this.importTracking(fl); e.target.value = ''; },
+      b2Msg: s.b2Msg, hasB2Msg: !!s.b2Msg, b2Fg: s.b2Ok ? '#1a6b3c' : '#a32222',
+      b2Fields: [['senderName', 'ご依頼主名', 'V_Q Store'], ['senderZip', 'ご依頼主 郵便番号', '1500042'], ['senderAddr', 'ご依頼主 住所', '東京都渋谷区…'], ['senderTel', 'ご依頼主 電話番号', '03-0000-0000'],
+        ['billingCode', '請求先顧客コード（必須）', '10〜12桁'], ['billingClass', '請求先分類コード（任意）', ''], ['freightNo', '運賃管理番号', '01'], ['itemName', '品名（送り状に印字）', 'リキッド'], ['handling', '荷扱い（任意）', 'ワレ物注意']]
+        .map(([k, label, ph]) => ({ label: label, ph: ph, value: s.shipCfg[k] || '', set: e => this.setState({ shipCfg: Object.assign({}, this.state.shipCfg, { [k]: e.target.value }), shipSaved: false }) })),
+      issuerFields: [['issuerName', '発行者名', 'V_Q Store'], ['issuerPerson', '担当者名', '高木 三暉'], ['issuerEmail', '連絡先メール（任意）', ''], ['invoiceNo', '適格請求書 登録番号（任意）', 'T1234567890123']]
+        .map(([k, label, ph]) => ({ label: label, ph: ph, value: s.shipCfg[k] || '', set: e => this.setState({ shipCfg: Object.assign({}, this.state.shipCfg, { [k]: e.target.value }), shipSaved: false }) })),
+      slipType: s.shipCfg.slipType || '0', slipOpts: SLIP_TYPES.map(([v, label]) => ({ v: v, label: label })),
+      setSlipType: e => this.setState({ shipCfg: Object.assign({}, s.shipCfg, { slipType: e.target.value }), shipSaved: false }),
+      saveShipCfg: () => this.saveShipCfg(), shipSaveLabel: s.shipSaved ? '保存しました' : '設定を保存',
       rfAmount: s.rf.amount, rfReason: s.rf.reason, rfRestock: !!s.rf.restock,
       setRfAmount: e => this.setState({ rf: Object.assign({}, s.rf, { amount: e.target.value.replace(/[^0-9]/g, '') }) }),
       setRfReason: e => this.setState({ rf: Object.assign({}, s.rf, { reason: e.target.value }) }),
